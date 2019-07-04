@@ -30,24 +30,24 @@ open class PTPopupWebView : UIView {
     
     // Contents view
     @IBOutlet weak internal var contentView: UIView!
-
+    
     // Title
     @IBOutlet weak internal var titleViewHeight : NSLayoutConstraint!
     @IBOutlet weak internal var titleView       : UIView!
     @IBOutlet weak internal var titleLabel      : UILabel!
-
+    
     // Buttons
     @IBOutlet weak internal var buttonContainerHeight : NSLayoutConstraint!
     @IBOutlet weak internal var buttonContainer       : UIView!
-
+    
     // Close button
     @IBOutlet weak internal var closeButton : UIButton!
-
+    
     // Web view container (WKWebView can not be allocated on the StoryBoard)
     @IBOutlet weak internal var webViewContainer : UIView!
     open fileprivate(set) var webView = WKWebView()
-
-
+    
+    
     /* Property */
     
     /// Title text
@@ -78,26 +78,26 @@ open class PTPopupWebView : UIView {
     }
     /// View Style
     open fileprivate(set) var style : PTPopupWebViewStyle?
-
+    
     /**
      Title text.
      If valuse is nil, displays web page's title.
      If you want to specify the title text instead of web page's title, set this paramaeter.
-
+     
      -parameters:
-        - title: title text
+     - title: title text
      */
     open func title(_ title: String?) -> Self {
         self.title = title
         return self
     }
-
+    
     
     /**
      URL
-
+     
      - parameters:
-        - URL: URL
+     - URL: URL
      */
     open func URL(_ URL: Foundation.URL?) -> Self {
         self.URL = URL
@@ -105,48 +105,48 @@ open class PTPopupWebView : UIView {
     }
     /**
      URL
-
+     
      - parameters:
-        - string: URL string
+     - string: URL string
      */
     open func URL(string urlString: String) -> Self {
         URL(Foundation.URL(string: urlString))
         return self
     }
-
     
-
+    
+    
     /**
      Webview's contents text.
      If you want to specify the display contents in the text instead of Web resources, set this parameter.
      
      - parameters:
-        - content: contents text
+     - content: contents text
      */
     open func content(_ content: String?) -> Self {
         self.content = content
         return self
     }
-
-
+    
+    
     
     /**
      View Style.
      To customize the style, you choose one of below way.
      1) generate a PTPopupWebViewStyle instance and change the parameters.
      2) define the Style class extends PTPopupWebViewStyle, and change the parameters in initializer
-
+     
      - parameters:
-        - style: style instance
+     - style: style instance
      */
     open func style(_ style: PTPopupWebViewStyle) -> Self {
         self.style = style
         return self
     }
-
-
-
-
+    
+    
+    
+    
     /// External link patterns (open with iOS system)
     open fileprivate(set) var externalLinkPattern : [String] = []
     
@@ -160,7 +160,7 @@ open class PTPopupWebView : UIView {
         super.init(frame: frame)
         loadView()
     }
-
+    
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         loadView()
@@ -172,14 +172,14 @@ open class PTPopupWebView : UIView {
         let view = nib.instantiate(withOwner: self, options: nil).first as! UIView
         view.frame = self.bounds
         addSubview(view)
-
+        
         // Add KeyValue observer for webview
         webView.addObserver(self, forKeyPath:"title", options:.new, context:nil)
         webView.addObserver(self, forKeyPath:"URL", options:.new, context:nil)
         webView.addObserver(self, forKeyPath:"load" , options:.new, context:nil)
         webView.addObserver(self, forKeyPath:"estimatedProgress" , options:.new, context:nil)
     }
-
+    
     override open func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
         
@@ -187,7 +187,7 @@ open class PTPopupWebView : UIView {
         if newSuperview == nil {
             return
         }
-
+        
         let style : PTPopupWebViewStyle
         if self.style == nil {
             self.style = PTPopupWebViewStyle()
@@ -212,7 +212,7 @@ open class PTPopupWebView : UIView {
             contentView.layer.cornerRadius = style.cornerRadius
             contentView.layer.masksToBounds = true
         }
-
+        
         // Title initialize
         titleLabel.text = title
         titleLabel.textColor = style.titleForegroundColor
@@ -220,7 +220,7 @@ open class PTPopupWebView : UIView {
         titleView.backgroundColor = style.titleBackgroundColor
         titleView.isHidden = style.titleHidden
         titleViewHeight.constant = style.titleHeight
-
+        
         if style.titleHidden {
             innerMarginTop.constant -= titleView.bounds.height
         }
@@ -241,11 +241,11 @@ open class PTPopupWebView : UIView {
         for buttonSetting in buttonSettings {
             let button = UIButton()
             button.titleLabel?.font = buttonSetting.font ?? style.buttonFont
-            button.setTitle(buttonSetting.title, for: UIControlState())
-            button.setTitleColor(buttonSetting.foregroundColor ?? style.buttonForegroundColor, for: UIControlState())
+            button.setTitle(buttonSetting.title, for: UIControl.State())
+            button.setTitleColor(buttonSetting.foregroundColor ?? style.buttonForegroundColor, for: UIControl.State())
             button.setTitleColor(buttonSetting.disabledColor ?? style.buttonDisabledColor, for: .disabled)
             button.backgroundColor = buttonSetting.backgroundColor ?? style.buttonBackgroundColor
-            button.setImage(buttonSetting.image, for: UIControlState())
+            button.setImage(buttonSetting.image, for: UIControl.State())
             
             // Forward/Back/Reload's initial state is disabled
             switch buttonSetting.type {
@@ -266,46 +266,46 @@ open class PTPopupWebView : UIView {
             buttonContainer.addSubview(button)
             buttons.append(button)
         }
-
+        
         // add constraints for buttons
         for i in 0 ..< buttons.count {
             let button = buttons[i]
             // Top/Bottom to container is 0
-            for attribute in [NSLayoutAttribute.top, NSLayoutAttribute.bottom] {
+            for attribute in [NSLayoutConstraint.Attribute.top, NSLayoutConstraint.Attribute.bottom] {
                 buttonContainer.addConstraint(
                     NSLayoutConstraint(
-                        item  : button,          attribute: attribute, relatedBy: NSLayoutRelation.equal,
+                        item  : button,          attribute: attribute, relatedBy: NSLayoutConstraint.Relation.equal,
                         toItem: buttonContainer, attribute: attribute, multiplier: 1.0, constant: 0.0)
                 )
             }
             
             // Leading constraint
             let leftItem      = i == 0 ? buttonContainer : buttons[i - 1]
-            let leftAttribute = i == 0 ? NSLayoutAttribute.leading : NSLayoutAttribute.trailing
+            let leftAttribute = i == 0 ? NSLayoutConstraint.Attribute.leading : NSLayoutConstraint.Attribute.trailing
             buttonContainer.addConstraint(
                 NSLayoutConstraint(
-                    item  : button,   attribute: NSLayoutAttribute.leading, relatedBy: NSLayoutRelation.equal,
+                    item  : button,   attribute: NSLayoutConstraint.Attribute.leading, relatedBy: NSLayoutConstraint.Relation.equal,
                     toItem: leftItem, attribute: leftAttribute, multiplier: 1.0, constant: 0.0)
             )
             
             // Trailing constraint
             let rightItem      = i == buttons.count - 1 ? buttonContainer : buttons[i + 1]
-            let rightAttribute = i == buttons.count - 1 ? NSLayoutAttribute.trailing : NSLayoutAttribute.leading
+            let rightAttribute = i == buttons.count - 1 ? NSLayoutConstraint.Attribute.trailing : NSLayoutConstraint.Attribute.leading
             buttonContainer.addConstraint(
                 NSLayoutConstraint(
-                    item  : button,    attribute: NSLayoutAttribute.trailing, relatedBy: NSLayoutRelation.equal,
+                    item  : button,    attribute: NSLayoutConstraint.Attribute.trailing, relatedBy: NSLayoutConstraint.Relation.equal,
                     toItem: rightItem, attribute: rightAttribute, multiplier: 1.0, constant: 0.0)
             )
         }
-
+        
         switch style.buttonDistribution {
         case .equal:
             // Equal width constraints
             for i in 1 ..< buttons.count {
                 buttonContainer.addConstraint(
                     NSLayoutConstraint(
-                        item  : buttons[0], attribute: NSLayoutAttribute.width, relatedBy: NSLayoutRelation.equal,
-                        toItem: buttons[i], attribute: NSLayoutAttribute.width, multiplier: 1.0, constant: 0.0)
+                        item  : buttons[0], attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal,
+                        toItem: buttons[i], attribute: NSLayoutConstraint.Attribute.width, multiplier: 1.0, constant: 0.0)
                 )
             }
             
@@ -316,8 +316,8 @@ open class PTPopupWebView : UIView {
                 let diffWidth = baseWidth - calcContentWidth(buttons[i])
                 buttonContainer.addConstraint(
                     NSLayoutConstraint(
-                        item  : buttons[0], attribute: NSLayoutAttribute.width, relatedBy: NSLayoutRelation.equal,
-                        toItem: buttons[i], attribute: NSLayoutAttribute.width, multiplier: 1.0, constant: diffWidth)
+                        item  : buttons[0], attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal,
+                        toItem: buttons[i], attribute: NSLayoutConstraint.Attribute.width, multiplier: 1.0, constant: diffWidth)
                 )
             }
         }
@@ -328,18 +328,18 @@ open class PTPopupWebView : UIView {
             let bundle = Bundle(for: PTPopupWebViewButton.self)
             let image = UIImage(named: "close", in: bundle, compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             
-            closeButton.setImage(image, for: UIControlState())
-            closeButton.contentEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
+            closeButton.setImage(image, for: UIControl.State())
+            closeButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
             closeButton.addTarget(self, action: #selector(PTPopupWebView.close), for: .touchUpInside)
         }
-
+        
         // Web view
         webView.translatesAutoresizingMaskIntoConstraints = false
         webViewContainer.addSubview(webView)
-        for attribute in [NSLayoutAttribute.top, NSLayoutAttribute.leading, NSLayoutAttribute.bottom, NSLayoutAttribute.trailing] {
+        for attribute in [NSLayoutConstraint.Attribute.top, NSLayoutConstraint.Attribute.leading, NSLayoutConstraint.Attribute.bottom, NSLayoutConstraint.Attribute.trailing] {
             webViewContainer.addConstraint(
                 NSLayoutConstraint(
-                    item  : webViewContainer, attribute: attribute, relatedBy: NSLayoutRelation.equal,
+                    item  : webViewContainer, attribute: attribute, relatedBy: NSLayoutConstraint.Relation.equal,
                     toItem: webView,          attribute: attribute, multiplier: 1.0, constant: 0.0)
             )
         }
@@ -427,11 +427,11 @@ open class PTPopupWebView : UIView {
     
     /**
      Add external open link pattern
-
+     
      Add URL pattern to open in iOS default behavior.
-
+     
      - parameters:
-        - pattern: String: URL pattern (regular expression)
+     - pattern: String: URL pattern (regular expression)
      
      ex) AppStore's link
      ```
@@ -445,11 +445,11 @@ open class PTPopupWebView : UIView {
     
     /**
      Add external open link pattern
-
+     
      Add URL pattern to open in iOS default behavior with the predefined pattern.
-
+     
      - parameters:
-        - pattern: PTPopupWebViewExternalLinkPattern: the predefined pattern
+     - pattern: PTPopupWebViewExternalLinkPattern: the predefined pattern
      */
     
     open func addExternalLinkPattern (_ pattern: PTPopupWebViewExternalLinkPattern) -> Self {
@@ -461,7 +461,7 @@ open class PTPopupWebView : UIView {
      Add button
      
      - parameters:
-        - buttonSetting: PTPopupWebViewButton: button setting
+     - buttonSetting: PTPopupWebViewButton: button setting
      */
     open func addButton (_ buttonSetting: PTPopupWebViewButton) -> Self {
         self.buttonSettings.append(buttonSetting)
@@ -469,7 +469,7 @@ open class PTPopupWebView : UIView {
     }
     
     /// Close popup view
-    open func close() {
+    @objc open func close() {
         if let delegate = delegate {
             // if delegate != nil (ex. when use PTPopupWebViewContoller)
             delegate.close()
@@ -481,7 +481,7 @@ open class PTPopupWebView : UIView {
     }
     
     
-    internal func buttonTapped (_ sender: AnyObject) {
+    @objc internal func buttonTapped (_ sender: AnyObject) {
         if let button = sender as? UIButton, let index = buttons.index(of: button) {
             if index < buttonSettings.count {
                 let buttonSetting = buttonSettings[index]
